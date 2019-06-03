@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2cbc09976e1dfb1ac8fa9220d413e3e3",
+    "content-hash": "03e91dbefb84dfdd1c0e7a9c9f0aa88c",
     "packages": [
         {
             "name": "consolidation/annotated-command",
@@ -3155,6 +3155,7 @@
                 "mock",
                 "xunit"
             ],
+            "abandoned": true,
             "time": "2017-06-30T09:13:00+00:00"
         },
         {
