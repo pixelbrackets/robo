@@ -500,6 +500,8 @@ class ImageMinify extends BaseTask
         array_unshift($a, $executable);
         $command = implode(' ', $a);
 
+        echo 'C→' . $command . PHP_EOL;
+
         // execute the command
         $exec = new Exec($command);
 
