@@ -36,6 +36,7 @@ jobs:
 
       - name: Run linter
         run: composer lint
+    if: ${{ false }}
 
   backward-compatibility:
     name: Backward Compatibility
@@ -65,6 +66,7 @@ jobs:
 
       - name: Run roave/backward-compatibility-check (Disable until we have 3.0.0 stable)
         run: echo ./tools/vendor/bin/roave-backward-compatibility-check --from=3.0.0
+    if: ${{ false }}
 
   tests:
     name: Tests
@@ -77,7 +79,7 @@ jobs:
     strategy:
       matrix:
         os:
-          - ubuntu-latest
+          #- ubuntu-latest
           - windows-latest
 
         php-version:
@@ -89,19 +91,19 @@ jobs:
         dependencies:
           - locked
 
-        include:
-          - os: ubuntu-latest
-            php-version: "7.1"
-            dependencies: lowest
-
-          - os: ubuntu-latest
-            php-version: "7.4"
-            dependencies: highest
-
-          - os: ubuntu-latest
-            php-version: "8.0"
-            dependencies: highest
-            php-ini-values: assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=1, opcache.optimization_level=-1, opcache.jit_buffer_size=4096M, opcache.jit=1205
+        #include:
+        #  - os: ubuntu-latest
+        #    php-version: "7.1"
+        #    dependencies: lowest
+        #
+        #  - os: ubuntu-latest
+        #    php-version: "7.4"
+        #    dependencies: highest
+        #
+        #  - os: ubuntu-latest
+        #    php-version: "8.0"
+        #    dependencies: highest
+        #    php-ini-values: assert.exception=1, zend.assertions=1, opcache.enable=1, opcache.enable_cli=1, opcache.optimization_level=-1, opcache.jit_buffer_size=4096M, opcache.jit=1205
 
     steps:
       - name: Checkout

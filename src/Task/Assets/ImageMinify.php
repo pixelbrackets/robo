@@ -218,7 +218,7 @@ class ImageMinify extends BaseTask
         $amount = (count($files) == 1 ? 'image' : 'images');
         $message = "Minified {filecount} out of {filetotal} $amount into {destination}";
         $context = ['filecount' => count($this->results['success']), 'filetotal' => count($files), 'destination' => $this->to];
-
+print_r($this->results);
         if (count($this->results['success']) == count($files)) {
             $this->printTaskSuccess($message, $context);
 
@@ -347,7 +347,7 @@ class ImageMinify extends BaseTask
      */
     protected function getTarget($file, $to)
     {
-        $target = $to . '/' . basename($file);
+        $target = $to . DIRECTORY_SEPARATOR . basename($file);
 
         return $target;
     }
@@ -418,13 +418,21 @@ class ImageMinify extends BaseTask
             $this->printTaskInfo('Minifying {filepath} with {minifier}', ['filepath' => $from, 'minifier' => $minifier]);
             $result = $this->executeCommand($command);
 
-            // check the return code
-            if ($result->getExitCode() == 127) {
+            echo 'Command→' . $command;
+            echo 'ExitCode→' . $result->getExitCode();
+            echo 'ExitMessage→' . $result->getMessage();
+            echo shell_exec('pngopt --help');
+            echo shell_exec('echo %ERRORLEVEL%');
+
+            // try to download the binary if it is missing (exitcode 127)
+            if ($result->getExitCode() === 127 || (substr($this->getOS(), 0, 3) == 'win' && $result->getExitCode() === 1)) {
+                echo 'InstallationAttempt→';
                 $this->printTaskError('The {minifier} executable cannot be found', ['minifier' => $minifier]);
                 // try to install from imagemin repository
                 if (array_key_exists($minifier, $this->imageminRepos)) {
                     $result = $this->installFromImagemin($minifier);
                     if ($result instanceof Result) {
+                        echo 'ImageminDownloader→' . $result->getMessage();
                         if ($result->wasSuccessful()) {
                             $this->printTaskSuccess($result->getMessage());
                             // retry the conversion with the downloaded executable
@@ -445,6 +453,9 @@ class ImageMinify extends BaseTask
                 } else {
                     return $result;
                 }
+            }
+            if ($result->getExitCode() > 0) {
+                echo 'Error without Installation';
             }
 
             // check the success of the conversion
@@ -500,7 +511,8 @@ class ImageMinify extends BaseTask
         array_unshift($a, $executable);
         $command = implode(' ', $a);
 
-        echo 'C→' . $command . PHP_EOL;
+        //echo 'C→' . $command . PHP_EOL;
+        //echo shell_exec($command);
 
         // execute the command
         $exec = new Exec($command);
@@ -529,15 +541,18 @@ class ImageMinify extends BaseTask
             // if it is win, add a .exe extension
             $url = $this->imageminRepos[$executable] . '/blob/main/vendor/' . $os . '/' . $executable . '.exe?raw=true';
         }
+        echo 'DownloadURL→' . $url;
         $data = @file_get_contents($url, false, null);
         if ($data === false) {
             // there is something wrong with the url, try it without the version info
             $url = preg_replace('/x[68][64]\//', '', $url);
             $data = @file_get_contents($url, false, null);
             if ($data === false) {
-                // there is still something wrong with the url if it is win, try with win32
+                // there is still something wrong with the url
+                // if it is windows, then try with »win« only
                 if (substr($os, 0, 3) == 'win') {
-                    $url = preg_replace('win/', 'win32/', $url);
+                    $url = preg_replace('/\/win.+?\//', '/win/', $url);
+                    echo 'FixedDownloadURL→' . $url;
                     $data = @file_get_contents($url, false, null);
                     if ($data === false) {
                         // there is nothing more we can do
@@ -589,6 +604,9 @@ class ImageMinify extends BaseTask
 
         $message = sprintf('Executable <info>%s</info> successfully downloaded', $executable);
 
+        echo 'Download→' . $this->executablePaths[$executable];
+        echo 'Test→' . shell_exec($this->executablePaths[$executable] . ' --help');
+
         return Result::success($this, $message);
     }
 
@@ -600,7 +618,7 @@ class ImageMinify extends BaseTask
      */
     protected function optipng($from, $to)
     {
-        $command = sprintf('optipng -quiet -out "%s" -- "%s"', $to, $from);
+        $command = sprintf('optipng -out "%s" -- "%s"', $to, $from);
         if ($from != $to && is_file($to)) {
             // earlier versions of optipng do not overwrite the target without a backup
             // http://sourceforge.net/p/optipng/bugs/37/

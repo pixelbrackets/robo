@@ -56,13 +56,13 @@ class AssetsTest extends TestCase
         mkdir('dist');
 
         $sampleImage = $this->fixtures->dataFile('sample.png');
-        $outputImage = 'dist/sample.png';
+        $outputImage = 'dist' . DIRECTORY_SEPARATOR . 'sample.png';
 
         $initialFileSize = filesize($sampleImage);
 
         $result = $this->taskImageMinify($sampleImage)
-            ->setExecutableDir(realpath('') . '/bin') // use sandbox for bin download
-            ->to(realpath('') . '/dist')
+            ->setExecutableDir(realpath('') . DIRECTORY_SEPARATOR . 'bin') // use sandbox for bin download
+            ->to(realpath('') . DIRECTORY_SEPARATOR . 'dist')
             ->run();
         $this->assertTrue($result->wasSuccessful(), $result->getMessage());
 
