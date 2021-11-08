@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - 3.x
+      - test
 
 name: CI
 
